@@ -1,87 +1,36 @@
-"use client";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
+import { TweetForm } from "./tweetform";
+import Image from "next/image";
+import { auth } from "@/lib/auth";
+import profilepic from "@/../public/profilepic.svg";
 
-export default function Home() {
+export default async function Home() {
   const mockTweets = [
     "Wow so cool",
     "amazing content as always!",
     "This thing sucks :(",
   ];
+  const session = await auth();
+  if (session) {
+    console.log(session.user?.image);
+  }
 
-  const formSchema = z.object({
-    tweet: z.string().min(1, "").max(256),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      tweet: "",
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-  };
   return (
-    <div className="ml-16 h-screen w-full min-w-0 max-w-xl shrink-0 border-x border-slate-200 dark:border-slate-800 md:ml-64">
-      <div className="mx-auto grid w-full shrink-0 grid-cols-8 grid-rows-1 pt-8">
+    <div className="ml-16 h-screen w-full min-w-0 max-w-xl shrink-0 border-x border-slate-200 dark:border-slate-800 dark:bg-slate-950 md:ml-72">
+      <div className="mx-auto grid w-full shrink-0 grid-cols-8 grid-rows-1 pt-12">
         <div className="col-start-1 col-end-1 row-start-1 row-end-auto mx-auto pt-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-10 w-10"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+          {session?.user?.image ? (
+            <Image
+              src={session.user.image}
+              alt="User profile picture"
+              width={40}
+              height={40}
+              className="rounded-full"
             />
-          </svg>
+          ) : (
+            <Image src={profilepic} alt="User profile picture" />
+          )}
         </div>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="col-start-2 col-end-8 row-start-1 row-end-1 space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="tweet"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Textarea
-                      className="mx-auto max-h-fit min-h-fit min-w-0 max-w-md resize-none"
-                      placeholder="What is happening?!"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="mx-auto flex min-w-0 max-w-md flex-row justify-end">
-              <Button type="submit" size={"sm"}>
-                Post
-              </Button>
-            </div>
-            <Separator />
-          </form>
-        </Form>
+        <TweetForm />
       </div>
       <div className="flex flex-col">
         {mockTweets.map((value, key) => {
